@@ -1,5 +1,5 @@
 import express from "express";
-import { plantsRouter } from "./routes/plants";
+import { plantsRouter } from "./routes/plants.routes";
 
 export const app = express();
 

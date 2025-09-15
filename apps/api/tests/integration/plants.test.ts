@@ -1,5 +1,5 @@
 import request from "supertest";
-import { testPool, testPlantsTable } from "../../config/test-database";
+import { testPool, testPlantsTable } from "../../src/config/test-database";
 
 beforeAll(async () => {
   await testPlantsTable();
@@ -7,6 +7,6 @@ beforeAll(async () => {
 
 describe("Test Plants API", () => {
   test("Post Method: Insert into plants table", async () => {
-    await testPool.query(`INSERT `);
+    await testPool.query(`INSERT INTO plants`);
   });
 });
