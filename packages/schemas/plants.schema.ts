@@ -1,14 +1,23 @@
 import z from "zod";
 
+export interface PlantDTO {
+  id: string;
+  commonName: string;
+  scientificName: string | null;
+  wateringIntervalDays: number;
+  sunlight: string | null;
+  careInstructions: string | null;
+  externalApiId: string | null;
+  createdAt: Date;
+}
+
 export const plantsValidation = z.object({
-  id: z.uuidv4(),
-  common_name: z.string(),
-  scientific_name: z.string().nullable(),
-  watering_interval_days: z.number().positive(),
+  commonName: z.string(),
+  scientificName: z.string().nullable(),
+  wateringIntervalDays: z.number().positive(),
   sunlight: z.string().nullable(),
-  care_instructions: z.string().nullable(),
-  external_api_id: z.string().nullable,
-  created_at: z.date(),
+  careInstructions: z.string().nullable(),
+  externalApiId: z.string().nullable,
 });
 
 export type PlantSchema = z.infer<typeof plantsValidation>;
