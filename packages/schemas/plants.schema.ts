@@ -17,7 +17,7 @@ export const plantsValidation = z.object({
   wateringIntervalDays: z.number().positive(),
   sunlight: z.string().nullable(),
   careInstructions: z.string().nullable(),
-  externalApiId: z.string().nullable,
+  externalApiId: z.string().nullable(),
 });
 
 export type PlantSchema = z.infer<typeof plantsValidation>;

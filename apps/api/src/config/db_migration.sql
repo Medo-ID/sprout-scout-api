@@ -1,17 +1,6 @@
 -- Enable UUID extension (only needs to be run once per database)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE plants (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  common_name TEXT NOT NULL,
-  scientific_name TEXT,
-  watering_interval_days INT,   -- default from API
-  sunlight TEXT,
-  care_instructions TEXT,
-  external_api_id TEXT UNIQUE,  -- to avoid duplicates
-  created_at TIMESTAMP DEFAULT now()
-);
-
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email TEXT UNIQUE NOT NULL,
@@ -29,12 +18,36 @@ CREATE TABLE auth_providers (
   UNIQUE (provider, provider_user_id)
 );
 
-CREATE TABLE user_plants (
+CREATE TABLE plants (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  common_name TEXT NOT NULL,
+  scientific_name TEXT,
+  watering_interval_days INT NOT NULL CHECK (watering_frequency_days > 0),
+  sunlight TEXT,
+  care_instructions TEXT,
+  external_api_id TEXT UNIQUE,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+CREATE TABLE gardens (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  plant_id UUID REFERENCES plants(id), -- always references cached plant
-  nickname TEXT,                       -- e.g., "Balcony Basil"
-  custom_watering_interval_days INT,   -- override if user wants
+  name TEXT NOT NULL,
+  location TEXT,
+  created_at TIMESTAMP DEFAULT now()
+)
+
+CREATE TABLE user_plants (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  garden_id UUID REFERENCES gardens(id) ON DELETE CASCADE,
+  plant_id UUID REFERENCES plants(id) ON DELETE CASCADE,
+  nickname TEXT,
+  custom_watering_interval_days INT,
   last_watered_at TIMESTAMP,
   created_at TIMESTAMP DEFAULT now()
 );
+
+CREATE INDEX idx_plants_name ON plants (lower(name));
+CREATE INDEX idx_plants_external_api_id ON plants (external_api_id);
+CREATE INDEX idx_user_plants_garden ON user_plants (garden_id);
+CREATE INDEX idx_watering_log_user_plant ON watering_log (user_plant_id, watered_at DESC);
