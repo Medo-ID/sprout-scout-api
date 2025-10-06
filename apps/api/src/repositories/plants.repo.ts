@@ -1,118 +1,129 @@
-import { PlantDTO, PlantSchema } from "@schemas/plants.schema";
-import { Plant } from "../entities/plants";
+import { Plant, PlantSchema } from "@schemas/plants.schema";
 import { pool } from "../config/database";
 
+// TODO:
+/*
+ * | Method                                              | Description                                 |
+ * | --------------------------------------------------- | ------------------------------------------- |
+ * | `findByExternalApiId(externalApiId: string)`        | Check if plant from API already exists      |
+ * | `searchByName(query: string)`                       | Case-insensitive search with `ILIKE`        |
+ * | `findCustomPlantsByUser(userId: string)`            | Get all user-created plants                 |
+ * | `bulkInsert(plants: PlantSchema[])`                 | Efficiently insert multiple plants from API |
+ * | `updateWateringFrequency(id: string, days: number)` | Adjust watering schedule                    |
+ * | `findNeedingWatering(referenceDate: Date)`          | List plants that should be watered today    |
+ */
+
 const ALLOWED_COLUMNS = new Set([
-  "commonName",
-  "scientificName",
-  "wateringIntervalDays",
+  "name",
+  "watering_frequency_days",
   "sunlight",
-  "careInstructions",
-  "externalApiId",
+  "care_instructions",
+  "external_api_id",
+  "is_custom",
+  "custom_watering_frequency_days",
 ]);
 
+type TableEntries = [string, string | number | boolean | null][];
+
 export class PlantRepository {
-  async findAll(): Promise<PlantDTO[] | void[]> {
+  private extractValidEntries(data: PlantSchema): TableEntries {
+    if (!data) throw new Error("Missing plant data");
+    const entries = Object.entries(data).filter(
+      ([key, value]) => ALLOWED_COLUMNS.has(key) && value !== undefined
+    );
+    if (entries.length === 0) throw new Error("No valid fields");
+    return entries as TableEntries;
+  }
+
+  private buildInsertColumns(entries: TableEntries): string {
+    return entries.map(([key]) => `"${key.replace(/"/g, '""')}"`).join(", ");
+  }
+
+  private buildPlaceholders(entries: TableEntries): string {
+    return entries.map((_, idx) => `$${idx + 1}`).join(", ");
+  }
+
+  private buildUpdateClauses(entries: TableEntries): string {
+    return entries
+      .map(([key], idx) => `"${key.replace(/"/g, '""')}" = $${idx + 1}`)
+      .join(", ");
+  }
+
+  private async safeQuery<T>(
+    query: string,
+    values: any[],
+    logMessage: string
+  ): Promise<T | undefined> {
+    try {
+      const { rows } = await pool.query(query, values);
+      return rows[0];
+    } catch (error) {
+      console.log(logMessage, error);
+      return undefined;
+    }
+  }
+
+  public async findAll(): Promise<Plant[]> {
     try {
       const { rows } = await pool.query(
         `SELECT * FROM plants ORDER BY created_at DESC`
       );
-      return rows.map((row: PlantDTO) => {
-        new Plant(row);
-      });
+      return rows;
     } catch (error) {
       console.log("DB Error Finding all plants", error);
       return [];
     }
   }
 
-  async findById(id: string): Promise<PlantDTO | void> {
-    try {
-      const { rows } = await pool.query(`SELECT * FROM plants WHERE id = $1`, [
-        id,
-      ]);
-      return rows[0] as PlantDTO;
-    } catch (error) {
-      console.log(`DB Error Finding plant with id: ${id}`, error);
-    }
+  public async findById(id: string): Promise<Plant | undefined> {
+    if (!id) throw new Error("Missing plant id");
+    return this.safeQuery<Plant>(
+      `SELECT * FROM plants WHERE id = $1`,
+      [id],
+      `DB Error finding plant with id: ${id}`
+    );
   }
 
-  async create(data: PlantSchema): Promise<PlantDTO | void> {
-    try {
-      const { rows } = await pool.query(
-        `INSERT INTO plants 
-        (
-          commonName, 
-          scientificName, 
-          wateringIntervalDays, 
-          sunlight, 
-          careInstructions, 
-          externalApiId
-        ) 
-        VALUES ($1, $2, $3, $4, $5, $6)`,
-        [
-          data.commonName,
-          data.scientificName,
-          data.wateringIntervalDays,
-          data.sunlight,
-          data.careInstructions,
-          data.externalApiId,
-        ]
-      );
-
-      return new Plant(rows[0]).getData();
-    } catch (error) {
-      console.log("DB Error Creating new plant", error);
-    }
+  public async insert(data: PlantSchema): Promise<Plant | undefined> {
+    const entries = this.extractValidEntries(data);
+    const columns = this.buildInsertColumns(entries);
+    const placeholders = this.buildPlaceholders(entries);
+    const values = entries.map(([, value]) => value);
+    return this.safeQuery<Plant>(
+      `INSERT INTO plants (${columns}) VALUES (${placeholders})`,
+      values,
+      "DB Error creating new plant"
+    );
   }
 
-  async update(
+  public async update(
     id: string,
     data: PlantSchema
-  ): Promise<PlantSchema | Partial<PlantSchema> | void> {
-    if (id === undefined || id === null) throw new Error("Missing plant's id");
-
-    const entries = Object.entries(data || {}).filter(
-      ([key, value]) => ALLOWED_COLUMNS.has(key) && value !== undefined
+  ): Promise<Plant | undefined> {
+    if (!id) throw new Error("Missing plant id");
+    const entries = this.extractValidEntries(data);
+    const setClauses = this.buildUpdateClauses(entries);
+    const values = entries.map(([, value]) => value);
+    values.push(id);
+    return this.safeQuery<Plant>(
+      `UPDATE plants SET ${setClauses} WHERE id $${values.length} RETURNING *`,
+      values,
+      `DB Error updating plant with id: ${id}`
     );
-
-    if (entries.length === 0) throw new Error("No valid fields to update");
-
-    const setClauses = entries
-      .map(([key], idx) => {
-        const safeIdentifier = `"${key.replace(/"/g, '""')}"`;
-        return `${safeIdentifier} = $${idx + 1}`;
-      })
-      .join(", ");
-
-    const queryValues = entries.map(([, value]) => value);
-    queryValues.push(id);
-
-    try {
-      const { rows } = await pool.query(
-        `UPDATE plants SET ${setClauses} WHERE = ${queryValues.length} RETURNING *`,
-        queryValues
-      );
-
-      return rows[0];
-    } catch (error) {
-      console.log(`DB Error Updating plant with id: ${id}`, error);
-    }
   }
 
-  async delete(ids: string[]): Promise<boolean> {
+  public async delete(ids: string[]): Promise<boolean> {
     if (!Array.isArray(ids) || ids.length === 0)
       throw new Error("Missing plant id");
-
+    const placeholders = ids.map((_, idx) => `$${idx + 1}`).join(", ");
     try {
-      const placeHolders = ids.map((_, idx) => `$${idx + 1}`).join(", ");
       const result = await pool.query(
-        `DELETE FROM plants WHERE id IN (${placeHolders})`,
+        `DELETE FROM plants WHERE id IN (${placeholders})`,
         ids
       );
-      return result.rowCount ? result.rowCount > 0 : false;
+      return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      console.log(`DB Error Deleting plant with these id: ${ids}`, error);
+      console.log(`DB Error Deleting plants with ids: ${ids}`, error);
       return false;
     }
   }

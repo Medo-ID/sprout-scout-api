@@ -1,53 +1,77 @@
 -- Enable UUID extension (only needs to be run once per database)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- 1. Users
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email TEXT UNIQUE NOT NULL,
   name TEXT,
   picture_url TEXT,
-  created_at TIMESTAMP DEFAULT now()
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 2. Auth providers
 CREATE TABLE auth_providers (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  provider TEXT NOT NULL,          -- 'local' | 'google'
-  provider_user_id TEXT,           -- google_id, etc.
-  password_hash TEXT,              -- only for 'local'
+  provider TEXT NOT NULL CHECK (provider IN ('local', 'google')),
+  provider_user_id TEXT,
+  password_hash TEXT,
   UNIQUE (provider, provider_user_id)
 );
 
+-- 3. Plants (base reference library)
 CREATE TABLE plants (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  common_name TEXT NOT NULL,
-  scientific_name TEXT,
-  watering_interval_days INT NOT NULL CHECK (watering_frequency_days > 0),
+  name TEXT NOT NULL,
+  watering_frequency_days INT NOT NULL CHECK (watering_frequency_days > 0),
   sunlight TEXT,
   care_instructions TEXT,
   external_api_id TEXT UNIQUE,
-  created_at TIMESTAMP DEFAULT now()
+  is_custom BOOLEAN DEFAULT FALSE,
+  custom_watering_frequency_days INT CHECK (
+    (is_custom = FALSE) OR 
+    (is_custom = TRUE AND custom_watering_frequency_days IS NOT NULL)
+  ),
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 4. Gardens (user grouping for plants)
 CREATE TABLE gardens (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   location TEXT,
-  created_at TIMESTAMP DEFAULT now()
-)
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
 
+-- 5. User’s specific plants
 CREATE TABLE user_plants (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   garden_id UUID REFERENCES gardens(id) ON DELETE CASCADE,
   plant_id UUID REFERENCES plants(id) ON DELETE CASCADE,
-  nickname TEXT,
-  custom_watering_interval_days INT,
-  last_watered_at TIMESTAMP,
-  created_at TIMESTAMP DEFAULT now()
+  planted_at DATE DEFAULT CURRENT_DATE
 );
 
-CREATE INDEX idx_plants_name ON plants (lower(name));
+-- 6. Watering logs
+CREATE TABLE watering_logs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_plant_id UUID REFERENCES user_plants(id) ON DELETE CASCADE,
+  watered_at TIMESTAMPTZ DEFAULT NOW(),
+  note TEXT
+);
+
+-- 7. Garden tasks
+CREATE TABLE tasks (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  garden_id UUID REFERENCES gardens(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  due_date DATE,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'done'))
+);
+
+-- Indexes
+CREATE INDEX idx_plants_name ON plants (LOWER(name));
 CREATE INDEX idx_plants_external_api_id ON plants (external_api_id);
 CREATE INDEX idx_user_plants_garden ON user_plants (garden_id);
-CREATE INDEX idx_watering_log_user_plant ON watering_log (user_plant_id, watered_at DESC);
+CREATE INDEX idx_watering_logs_user_plant ON watering_logs (user_plant_id, watered_at DESC);
