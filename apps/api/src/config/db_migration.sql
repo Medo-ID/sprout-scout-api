@@ -30,8 +30,8 @@ CREATE TABLE plants (
   external_api_id TEXT UNIQUE,
   is_custom BOOLEAN DEFAULT FALSE,
   custom_watering_frequency_days INT CHECK (
-    (is_custom = FALSE) OR 
-    (is_custom = TRUE AND custom_watering_frequency_days IS NOT NULL)
+    (isCustom = TRUE AND customWateringFrequencyDays > 0)
+    OR (isCustom = FALSE)
   ),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
