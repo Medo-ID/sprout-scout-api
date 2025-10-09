@@ -1,5 +1,12 @@
 import { Plant, PlantSchema } from "@schemas/plants.schema";
 import { pool } from "../config/database";
+import {
+  buildInsertColumns,
+  buildPlaceholders,
+  buildUpdateClauses,
+  extractValidEntries,
+  safeQuery,
+} from "../utils/repositories.helper";
 
 const ALLOWED_COLUMNS = new Set([
   "name",
@@ -11,46 +18,7 @@ const ALLOWED_COLUMNS = new Set([
   "custom_watering_frequency_days",
 ]);
 
-type TableEntries = [string, string | number | boolean | null][];
-
 export class PlantRepository {
-  private extractValidEntries(data: PlantSchema): TableEntries {
-    if (!data) throw new Error("Missing plant data");
-    const entries = Object.entries(data).filter(
-      ([key, value]) => ALLOWED_COLUMNS.has(key) && value !== undefined
-    );
-    if (entries.length === 0) throw new Error("No valid fields");
-    return entries as TableEntries;
-  }
-
-  private buildInsertColumns(entries: TableEntries): string {
-    return entries.map(([key]) => `"${key.replace(/"/g, '""')}"`).join(", ");
-  }
-
-  private buildPlaceholders(entries: TableEntries): string {
-    return entries.map((_, idx) => `$${idx + 1}`).join(", ");
-  }
-
-  private buildUpdateClauses(entries: TableEntries): string {
-    return entries
-      .map(([key], idx) => `"${key.replace(/"/g, '""')}" = $${idx + 1}`)
-      .join(", ");
-  }
-
-  private async safeQuery<T>(
-    query: string,
-    values: any[],
-    logMessage: string
-  ): Promise<T | undefined> {
-    try {
-      const { rows } = await pool.query(query, values);
-      return rows[0];
-    } catch (error) {
-      console.log(logMessage, error);
-      return undefined;
-    }
-  }
-
   public async findAll(): Promise<Plant[]> {
     try {
       const { rows } = await pool.query(
@@ -65,7 +33,7 @@ export class PlantRepository {
 
   public async findById(id: string): Promise<Plant | undefined> {
     if (!id) throw new Error("Missing plant id");
-    return this.safeQuery<Plant>(
+    return safeQuery<Plant>(
       `SELECT * FROM plants WHERE id = $1`,
       [id],
       `DB Error finding plant with id: ${id}`
@@ -76,7 +44,7 @@ export class PlantRepository {
     externalApiId: string
   ): Promise<Plant | undefined> {
     if (!externalApiId) throw new Error("Missing external api id");
-    return this.safeQuery<Plant>(
+    return safeQuery<Plant>(
       `SELECT * FROM plants WHERE external_api_id = $1`,
       [externalApiId],
       `DB Error finding plant by external api id: ${externalApiId}`
@@ -98,11 +66,11 @@ export class PlantRepository {
   }
 
   public async insert(data: PlantSchema): Promise<Plant | undefined> {
-    const entries = this.extractValidEntries(data);
-    const columns = this.buildInsertColumns(entries);
-    const placeholders = this.buildPlaceholders(entries);
+    const entries = extractValidEntries<PlantSchema>(data, ALLOWED_COLUMNS);
+    const columns = buildInsertColumns(entries);
+    const placeholders = buildPlaceholders(entries);
     const values = entries.map(([, value]) => value);
-    return this.safeQuery<Plant>(
+    return safeQuery<Plant>(
       `INSERT INTO plants (${columns}) VALUES (${placeholders}) RETURNING *`,
       values,
       "DB Error creating new plant"
@@ -117,9 +85,9 @@ export class PlantRepository {
     try {
       await client.query("BEGIN");
       for (const data of arrayData) {
-        const entries = this.extractValidEntries(data);
-        const columns = this.buildInsertColumns(entries);
-        const placeholders = this.buildPlaceholders(entries);
+        const entries = extractValidEntries<PlantSchema>(data, ALLOWED_COLUMNS);
+        const columns = buildInsertColumns(entries);
+        const placeholders = buildPlaceholders(entries);
         const values = entries.map(([, value]) => value);
         const { rows } = await client.query(
           `INSERT INTO plants (${columns}) VALUES (${placeholders}) RETURNING *`,
@@ -141,14 +109,17 @@ export class PlantRepository {
 
   public async update(
     id: string,
-    data: PlantSchema
+    data: Partial<PlantSchema>
   ): Promise<Plant | undefined> {
     if (!id) throw new Error("Missing plant id");
-    const entries = this.extractValidEntries(data);
-    const setClauses = this.buildUpdateClauses(entries);
+    const entries = extractValidEntries<Partial<PlantSchema>>(
+      data,
+      ALLOWED_COLUMNS
+    );
+    const setClauses = buildUpdateClauses(entries);
     const values = entries.map(([, value]) => value);
     values.push(id);
-    return this.safeQuery<Plant>(
+    return safeQuery<Plant>(
       `UPDATE plants SET ${setClauses} WHERE id = $${values.length} RETURNING *`,
       values,
       `DB Error updating plant with id: ${id}`
