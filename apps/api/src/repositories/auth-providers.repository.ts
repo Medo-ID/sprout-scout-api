@@ -5,7 +5,7 @@ import {
   buildPlaceholders,
   extractValidEntries,
   safeQuery,
-} from "../utils/repositories.helper";
+} from "../utils/repositories.utils";
 
 const ALLOWED_COLUMNS = new Set([
   "user_id",

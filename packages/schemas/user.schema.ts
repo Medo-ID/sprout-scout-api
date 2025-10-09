@@ -4,17 +4,21 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  pictureUrl: string;
+  pictureUrl: string | null;
 }
 
 export const userValidation = z.object({
-  name: z.string().regex(/[a-z][A-Z]/),
-  email: z.email(),
+  name: z
+    .string({ error: "Name is required" })
+    .min(2, "Name must be at least 2 characters")
+    .max(50, "Name must be less than 50 characters"),
+  email: z.email("Invalid email address"),
   pictureUrl: z
     .file()
     .min(1)
     .max(1024 * 1024)
-    .mime(["image/png", "image/jpeg", "image/webp"]),
+    .mime(["image/png", "image/jpeg", "image/webp"])
+    .optional(),
 });
 
 export type UserSchema = z.infer<typeof userValidation>;

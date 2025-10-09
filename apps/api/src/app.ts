@@ -1,7 +1,8 @@
-import express from "express";
+import express, { Express } from "express";
 import { plantsRouter } from "./routes/plants.route";
+import { authRouter } from "./routes/auth.route";
 
-export const app = express();
+export const app: Express = express();
 
 app.use(express.json());
 
@@ -11,3 +12,4 @@ app.get("/health", (request, response) => {
 
 // API endpoints
 app.use("/api/v1/plants", plantsRouter);
+app.use("/api/v1/auth", authRouter);

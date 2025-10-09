@@ -1,6 +1,6 @@
-import express from "express";
+import express, { Router } from "express";
 
-export const plantsRouter = express.Router();
+export const plantsRouter: Router = express.Router();
 
 // plantsRouter.post("/");
 // plantsRouter.get("/");

@@ -6,7 +6,7 @@ import {
   buildUpdateClauses,
   extractValidEntries,
   safeQuery,
-} from "../utils/repositories.helper";
+} from "../utils/repositories.utils";
 
 const ALLOWED_COLUMNS = new Set(["email", "name", "picture_url"]);
 
