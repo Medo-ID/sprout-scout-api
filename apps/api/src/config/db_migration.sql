@@ -23,16 +23,22 @@ CREATE TABLE auth_providers (
 -- 3. Plants (base reference library)
 CREATE TABLE plants (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  name TEXT NOT NULL,
+  common_name TEXT NOT NULL,
+  scientific_name
+  family,
+  cultivar,
+  species_epithet,
+  genus,
   watering_frequency_days INT NOT NULL CHECK (watering_frequency_days > 0),
   sunlight TEXT,
   care_instructions TEXT,
-  external_api_id TEXT UNIQUE,
+  external_api_id INT UNIQUE,
   is_custom BOOLEAN DEFAULT FALSE,
   custom_watering_frequency_days INT CHECK (
     (isCustom = TRUE AND customWateringFrequencyDays > 0)
     OR (isCustom = FALSE)
   ),
+  default_image TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

@@ -41,7 +41,7 @@ export class PlantRepository {
   }
 
   public async findByExternalApiId(
-    externalApiId: string
+    externalApiId: number
   ): Promise<Plant | undefined> {
     if (!externalApiId) throw new Error("Missing external api id");
     return safeQuery<Plant>(
