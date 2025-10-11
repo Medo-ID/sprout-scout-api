@@ -1,12 +1,13 @@
-import { User, UserSchema } from "@schemas/user.schema";
-import { pool } from "../config/database";
+import { pool } from "@/config/database";
+import { UserSchema } from "@/libs/schemas/user.schema";
+import { User } from "@/libs/types/user.types";
 import {
   buildInsertColumns,
   buildPlaceholders,
   buildUpdateClauses,
   extractValidEntries,
   safeQuery,
-} from "../utils/repositories.utils";
+} from "@/utils/repositories.utils";
 
 const ALLOWED_COLUMNS = new Set(["email", "name", "picture_url"]);
 

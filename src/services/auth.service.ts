@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
-import { signToken } from "../utils/auth.utils";
-import { UsersRepository } from "../repositories/users.repository";
-import { AuthProviderRepository } from "../repositories/auth-providers.repository";
+import { signToken } from "@/utils/auth.utils";
+import { UsersRepository } from "@/repositories/users.repository";
+import { AuthProviderRepository } from "@/repositories/auth-providers.repository";
 
 const userRepo = new UsersRepository();
 const authRepo = new AuthProviderRepository();

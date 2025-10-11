@@ -1,17 +1,6 @@
 import z from "zod";
 
-export interface Plant {
-  id: string;
-  name: string;
-  watering_frequency_days: number;
-  sunlight: string | null;
-  care_instructions: string | null;
-  external_api_id: string | null;
-  is_custom: boolean;
-  custom_watering_frequency_days: number | null;
-  created_at: Date;
-}
-
+// TODO: adjust the schema to be compatible with the plant table
 export const plantsValidation = z
   .object({
     name: z.string(),

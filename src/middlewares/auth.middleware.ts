@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from "express";
-import { verifyToken } from "../utils/auth.utils";
+import { verifyToken } from "@/utils/auth.utils";
+import { NextFunction, Request, Response } from "express";
 
 export interface AuthRequest extends Request {
   user?: { userId: string; email: string };

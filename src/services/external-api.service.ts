@@ -1,23 +1,12 @@
 import dotenv from "dotenv";
+import {
+  ExternalPlant,
+  ExternalPlantDetail,
+} from "@/libs/types/external-api.types";
 
 dotenv.config();
 
 const API_KEY = process.env.EXTERNAL_API_KEY;
-
-export interface ExternalPlant {
-  id: number;
-  common_name: string;
-  scientific_name: string[];
-  family: string;
-  hybrid: string;
-  authority: string | null;
-  subspecies: string | null;
-  cultivar: string | null;
-  variety: string | null;
-  pecies_epithet: string | null;
-  genus: string | null;
-  default_image: string | null;
-}
 
 export class ExternalPlantService {
   async searchSpecies(query: string): Promise<ExternalPlant[]> {

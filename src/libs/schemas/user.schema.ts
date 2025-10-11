@@ -1,12 +1,5 @@
 import z from "zod";
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  pictureUrl: string | null;
-}
-
 export const userValidation = z.object({
   name: z
     .string({ error: "Name is required" })

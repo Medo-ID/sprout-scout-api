@@ -1,21 +1,39 @@
 {
   "name": "sprout-scout",
   "version": "1.0.0",
-  "description": "",
+  "description": "An API that provides data that guides people on how to care for their plants.",
   "keywords": [],
-  "author": "",
+  "author": "Mohamed Idaghdour",
   "license": "ISC",
-  "packageManager": "pnpm@10.18.1+sha512.77a884a165cbba2d8d1c19e3b4880eee6d2fcabd0d879121e282196b80042351d5eb3ca0935fa599da1dc51265cc68816ad2bddd2a2de5ea9fdf92adbec7cd34",
+  "packageManager": "pnpm@10.18.1",
+  "scripts": {
+    "dev": "nodemon src/server.ts",
+    "build": "tsc --build",
+    "start": "node dist/server.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "zod": "^4.1.8",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3"
+  },
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "jest": "^30.1.3",
     "ts-jest": "^29.4.1",
-    "typescript": "^5.9.2"
-  },
-  "scripts": {
-    "test": "jest"
-  },
-  "dependencies": {
-    "zod": "^4.1.8"
+    "typescript": "^5.9.2",
+    "@types/bcryptjs": "^3.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/pg": "^8.15.5",
+    "@types/supertest": "^6.0.3",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.1.4",
+    "ts-node": "^10.9.2"
   }
 }

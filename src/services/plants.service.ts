@@ -1,24 +1,10 @@
-import { PlantSchema } from "@schemas/plants.schema";
-import { PlantRepository } from "../repositories/plants.repository";
-import { ExternalPlant, ExternalPlantService } from "./external-api.service";
+import { PlantRepository } from "@/repositories/plants.repository";
+import { ExternalPlantService } from "./external-api.service";
+import { ExternalPlant } from "@/libs/types/external-api.types";
+import { PlantSchema } from "@/libs/schemas/plants.schema";
 
 const plantsRepo = new PlantRepository();
 const externalApiService = new ExternalPlantService();
-
-interface ApiData {
-  id: number;
-  common_name: string;
-  scientific_name: string[];
-  family: string;
-  hybrid: string;
-  authority: string | null;
-  subspecies: string | null;
-  cultivar: string | null;
-  variety: string | null;
-  pecies_epithet: string | null;
-  genus: string | null;
-  default_image: string | null;
-}
 
 export class PlantsService {
   async searchForPlants(query: string): Promise<ExternalPlant[] | undefined> {
@@ -26,13 +12,16 @@ export class PlantsService {
     return plants;
   }
 
-  async savePlants(plantsData: ApiData[]) {
+  async savePlants(plantsData: ExternalPlant[]) {
     for (const plantData of plantsData) {
       const isExistsInDatabase = await plantsRepo.findByExternalApiId(
         plantData.id
       );
       if (!isExistsInDatabase) {
-        await plantsRepo.insert();
+        // TODO:
+        // before passing the data we need to process it and prepare it for insertion
+        // create a plant object that holds the needed data with proper types for insert method
+        // await plantsRepo.insert(plantData);
       }
     }
   }

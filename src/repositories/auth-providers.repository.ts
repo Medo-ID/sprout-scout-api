@@ -1,11 +1,12 @@
-import { AuthProvider, AuthProviderSchema } from "@schemas/authProvider.schema";
-import { pool } from "../config/database";
+import { pool } from "@/config/database";
+import { AuthProviderSchema } from "@/libs/schemas/authProvider.schema";
+import { AuthProvider } from "@/libs/types/auth-provider.types";
 import {
   buildInsertColumns,
   buildPlaceholders,
   extractValidEntries,
   safeQuery,
-} from "../utils/repositories.utils";
+} from "@/utils/repositories.utils";
 
 const ALLOWED_COLUMNS = new Set([
   "user_id",
