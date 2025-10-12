@@ -7,30 +7,60 @@ const plantsRepo = new PlantRepository();
 const externalApiService = new ExternalPlantService();
 
 export class PlantsService {
-  async searchForPlants(query: string): Promise<ExternalPlant[] | undefined> {
+  private async restructApiPlantData(
+    data: ExternalPlant
+  ): Promise<PlantSchema> {
+    const plantCareInstructions = await externalApiService.getSpeciesDetails(
+      data.id
+    );
+    const wateringBenchmark = plantCareInstructions.watering_general_benchmark;
+    const wateringFrequencyDays = Number(
+      wateringBenchmark.value.split('"')[1].split("-")[0]
+    );
+    return {
+      common_name: data.common_name,
+      watering_frequency_days: wateringFrequencyDays,
+      sunlight: plantCareInstructions.sunlight,
+      external_api_id: data.id,
+      is_custom: false,
+      custom_watering_frequency_days: null,
+      family: data.family,
+      cultivar: data.cultivar,
+      species_epithet: data.species_epithet,
+      genus: data.genus,
+      default_image: data.default_image.regular_url,
+    };
+  }
+
+  public async searchForPlants(
+    query: string
+  ): Promise<ExternalPlant[] | undefined> {
     const plants = await externalApiService.searchSpecies(query);
     return plants;
   }
 
-  async savePlants(plantsData: ExternalPlant[]) {
+  // TODO: IF PLANTDATA.LEMGTH === 1 USE => INSERT
+  // ELSE USE => BULKINSERT
+  public async savePlants(plantsData: ExternalPlant[]): Promise<string[]> {
+    const plantIds: string[] = [];
     for (const plantData of plantsData) {
       const isExistsInDatabase = await plantsRepo.findByExternalApiId(
         plantData.id
       );
       if (!isExistsInDatabase) {
-        // TODO:
-        // before passing the data we need to process it and prepare it for insertion
-        // create a plant object that holds the needed data with proper types for insert method
-        // await plantsRepo.insert(plantData);
+        const data = await this.restructApiPlantData(plantData);
+        const result = await plantsRepo.insert(data);
+        result && plantIds.push(result.id);
       }
     }
+    return plantIds;
   }
 
-  async addPlants() {}
+  // async addPlants() {}
 
-  async createCustomPlants(data: PlantSchema) {}
+  // async createCustomPlants(data: PlantSchema) {}
 
-  async updateCustomPlant(data: Partial<PlantSchema>) {}
+  // async updateCustomPlant(data: Partial<PlantSchema>) {}
 
-  async deleteCustomPlant(ids: string[]) {}
+  // async deleteCustomPlant(ids: string[]) {}
 }

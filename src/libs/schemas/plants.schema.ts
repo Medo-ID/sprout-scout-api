@@ -1,15 +1,18 @@
 import z from "zod";
 
-// TODO: adjust the schema to be compatible with the plant table
 export const plantsValidation = z
   .object({
-    name: z.string(),
+    common_name: z.string(),
+    family: z.string().optional(),
+    cultivar: z.string().optional(),
+    species_epithet: z.string().optional(),
+    genus: z.string().optional(),
     watering_frequency_days: z.number().positive(),
-    sunlight: z.string().nullable(),
-    care_instructions: z.string().nullable(),
+    sunlight: z.array(z.string()).nullable(),
+    external_api_id: z.number().nullable(),
     is_custom: z.boolean(),
     custom_watering_frequency_days: z.number().nullable(),
-    external_api_id: z.string().nullable(),
+    default_image: z.string().optional(),
   })
   .refine(
     (data) =>

@@ -6,11 +6,13 @@ export interface ExternalPlant {
   hybrid: string;
   authority: string | null;
   subspecies: string | null;
-  cultivar: string | null;
-  variety: string | null;
-  pecies_epithet: string | null;
-  genus: string | null;
-  default_image: string | null;
+  cultivar: string | undefined;
+  variety: string | undefined;
+  species_epithet: string | undefined;
+  genus: string | undefined;
+  default_image: {
+    regular_url: string | undefined;
+  };
 }
 
 export interface ExternalPlantDetail {

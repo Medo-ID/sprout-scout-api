@@ -65,7 +65,7 @@ export class PlantRepository {
       return [];
     }
   }
-
+  // TODO: UPDATE THE INSERT VALUES FOR SUNLIGHT TO HANDLE ARRAY OF STRING
   public async insert(data: PlantSchema): Promise<Plant | undefined> {
     const entries = extractValidEntries<PlantSchema>(data, ALLOWED_COLUMNS);
     const columns = buildInsertColumns(entries);
@@ -78,6 +78,7 @@ export class PlantRepository {
     );
   }
 
+  // TODO: UPDATE THE INSERT VALUES FOR SUNLIGHT TO HANDLE ARRAY OF STRING
   public async bulkInsert(arrayData: PlantSchema[]): Promise<Plant[]> {
     if (!Array.isArray(arrayData) || arrayData.length === 0)
       throw new Error("No Plant data provided");

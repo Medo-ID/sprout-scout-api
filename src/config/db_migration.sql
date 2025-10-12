@@ -24,14 +24,12 @@ CREATE TABLE auth_providers (
 CREATE TABLE plants (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   common_name TEXT NOT NULL,
-  scientific_name
-  family,
-  cultivar,
-  species_epithet,
-  genus,
+  family TEXT,
+  cultivar TEXT,
+  species_epithet TEXT,
+  genus TEXT,
   watering_frequency_days INT NOT NULL CHECK (watering_frequency_days > 0),
-  sunlight TEXT,
-  care_instructions TEXT,
+  sunlight TEXT[],
   external_api_id INT UNIQUE,
   is_custom BOOLEAN DEFAULT FALSE,
   custom_watering_frequency_days INT CHECK (
