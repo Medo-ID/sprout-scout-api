@@ -10,13 +10,17 @@ import {
 } from "@/utils/repositories.utils";
 
 const ALLOWED_COLUMNS = new Set([
-  "name",
+  "common_name",
+  "family",
+  "cultivar",
+  "species_epithet",
+  "genus",
   "watering_frequency_days",
   "sunlight",
-  "care_instructions",
   "external_api_id",
   "is_custom",
   "custom_watering_frequency_days",
+  "default_image",
 ]);
 
 export class PlantRepository {
@@ -65,7 +69,7 @@ export class PlantRepository {
       return [];
     }
   }
-  // TODO: UPDATE THE INSERT VALUES FOR SUNLIGHT TO HANDLE ARRAY OF STRING
+
   public async insert(data: PlantSchema): Promise<Plant | undefined> {
     const entries = extractValidEntries<PlantSchema>(data, ALLOWED_COLUMNS);
     const columns = buildInsertColumns(entries);
@@ -78,34 +82,38 @@ export class PlantRepository {
     );
   }
 
-  // TODO: UPDATE THE INSERT VALUES FOR SUNLIGHT TO HANDLE ARRAY OF STRING
   public async bulkInsert(arrayData: PlantSchema[]): Promise<Plant[]> {
     if (!Array.isArray(arrayData) || arrayData.length === 0)
       throw new Error("No Plant data provided");
-    const client = await pool.connect();
-    const insertedPlants: Plant[] = [];
-    try {
-      await client.query("BEGIN");
-      for (const data of arrayData) {
-        const entries = extractValidEntries<PlantSchema>(data, ALLOWED_COLUMNS);
-        const columns = buildInsertColumns(entries);
-        const placeholders = buildPlaceholders(entries);
-        const values = entries.map(([, value]) => value);
-        const { rows } = await client.query(
-          `INSERT INTO plants (${columns}) VALUES (${placeholders}) RETURNING *`,
-          values
-        );
+    const entriesList = arrayData.map((data) =>
+      extractValidEntries<PlantSchema>(data, ALLOWED_COLUMNS)
+    );
+    const columns = buildInsertColumns(entriesList[0]);
+    const placeholders = entriesList
+      .map(
+        (_, rowIndex) =>
+          `(${entriesList[rowIndex]
+            .map(
+              (_, columnIndex) =>
+                `$${rowIndex * entriesList[0].length + columnIndex + 1}`
+            )
+            .join(", ")})`
+      )
+      .join(", ");
+    const allValues = entriesList.flatMap((entries) =>
+      entries.map(([, value]) => value)
+    );
 
-        insertedPlants.push(rows[0]);
-      }
-      await client.query("COMMIT");
-      return insertedPlants;
+    try {
+      const { rows } = await pool.query(
+        `INSERT INTO plants (${columns}) VALUES (${placeholders}) RETURNING *`,
+        allValues
+      );
+
+      return rows;
     } catch (error) {
-      await client.query("ROLLBACK");
       console.log(`DB Error bulk inserting data: ${arrayData}`, error);
       return [];
-    } finally {
-      client.release();
     }
   }
 

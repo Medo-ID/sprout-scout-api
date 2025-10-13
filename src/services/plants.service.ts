@@ -2,6 +2,7 @@ import { PlantRepository } from "@/repositories/plants.repository";
 import { ExternalPlantService } from "./external-api.service";
 import { ExternalPlant } from "@/libs/types/external-api.types";
 import { PlantSchema } from "@/libs/schemas/plants.schema";
+import { Plant } from "@/libs/types/plant.types";
 
 const plantsRepo = new PlantRepository();
 const externalApiService = new ExternalPlantService();
@@ -9,38 +10,39 @@ const externalApiService = new ExternalPlantService();
 export class PlantsService {
   private async restructApiPlantData(
     data: ExternalPlant
-  ): Promise<PlantSchema> {
-    const plantCareInstructions = await externalApiService.getSpeciesDetails(
-      data.id
-    );
-    const wateringBenchmark = plantCareInstructions.watering_general_benchmark;
-    const wateringFrequencyDays = Number(
-      wateringBenchmark.value.split('"')[1].split("-")[0]
-    );
-    return {
-      common_name: data.common_name,
-      watering_frequency_days: wateringFrequencyDays,
-      sunlight: plantCareInstructions.sunlight,
-      external_api_id: data.id,
-      is_custom: false,
-      custom_watering_frequency_days: null,
-      family: data.family,
-      cultivar: data.cultivar,
-      species_epithet: data.species_epithet,
-      genus: data.genus,
-      default_image: data.default_image.regular_url,
-    };
+  ): Promise<PlantSchema | undefined> {
+    const details = await externalApiService.getSpeciesDetails(data.id);
+    const wateringValue = details.watering_general_benchmark.value;
+    const match = wateringValue.match(/(\d+)(?:\s*-\s*(d+))?/);
+    const wateringFrequencyDays = match && Number(match[1]);
+    if (details && wateringFrequencyDays) {
+      return {
+        common_name: data.common_name,
+        watering_frequency_days: wateringFrequencyDays,
+        sunlight: details.sunlight,
+        external_api_id: data.id,
+        is_custom: false,
+        custom_watering_frequency_days: null,
+        family: data.family,
+        cultivar: data.cultivar,
+        species_epithet: data.species_epithet,
+        genus: data.genus,
+        default_image: data.default_image.regular_url,
+      };
+    }
   }
 
   public async searchForPlants(
     query: string
-  ): Promise<ExternalPlant[] | undefined> {
+  ): Promise<Plant[] | ExternalPlant[] | undefined> {
+    const databasePlants = await plantsRepo.searchByName(query);
+    if (databasePlants.length > 0) {
+      return databasePlants;
+    }
     const plants = await externalApiService.searchSpecies(query);
     return plants;
   }
-
-  // TODO: IF PLANTDATA.LEMGTH === 1 USE => INSERT
-  // ELSE USE => BULKINSERT
+  // TODO: Re design the logic behind the user -> plant business logic
   public async savePlants(plantsData: ExternalPlant[]): Promise<string[]> {
     const plantIds: string[] = [];
     for (const plantData of plantsData) {
@@ -49,7 +51,7 @@ export class PlantsService {
       );
       if (!isExistsInDatabase) {
         const data = await this.restructApiPlantData(plantData);
-        const result = await plantsRepo.insert(data);
+        const result = data && (await plantsRepo.insert(data));
         result && plantIds.push(result.id);
       }
     }
