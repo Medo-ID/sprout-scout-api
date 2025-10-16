@@ -10,12 +10,14 @@ const authService = new AuthService();
 
 export async function register(req: Request, res: Response) {
   const parsedResult = registerValidation.safeParse(req.body);
+
   if (!parsedResult.success) {
     return res.status(400).json({
       message: "Invalid input",
       errors: z.prettifyError(parsedResult.error),
     });
   }
+
   const { name, email, password } = parsedResult.data;
   try {
     const result = await authService.registerLocal(email, password, name);
@@ -27,12 +29,14 @@ export async function register(req: Request, res: Response) {
 
 export async function login(req: Request, res: Response) {
   const parsedResult = loginValidation.safeParse(req.body);
+
   if (!parsedResult.success) {
     return res.status(400).json({
       message: "Invalid input",
       errors: z.prettifyError(parsedResult.error),
     });
   }
+
   const { email, password } = parsedResult.data;
   try {
     const result = await authService.loginLocal(email, password);

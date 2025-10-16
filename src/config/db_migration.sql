@@ -20,7 +20,16 @@ CREATE TABLE auth_providers (
   UNIQUE (provider, provider_user_id)
 );
 
--- 3. Plants (base reference library)
+-- 3. Gardens (user grouping for plants)
+CREATE TABLE gardens (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  location TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. Plants (base reference library)
 CREATE TABLE plants (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   common_name TEXT NOT NULL,
@@ -37,15 +46,6 @@ CREATE TABLE plants (
     OR (isCustom = FALSE)
   ),
   default_image TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 4. Gardens (user grouping for plants)
-CREATE TABLE gardens (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  location TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

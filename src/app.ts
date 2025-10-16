@@ -1,6 +1,7 @@
 import express, { Express } from "express";
 import { plantsRouter } from "./routes/plants.route";
 import { authRouter } from "./routes/auth.route";
+import { gardensRouter } from "./routes/gardens.route";
 
 export const app: Express = express();
 
@@ -11,5 +12,6 @@ app.get("/health", (request, response) => {
 });
 
 // API endpoints
-app.use("/api/v1/plants", plantsRouter);
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/plants", plantsRouter);
+app.use("/api/v1/gardens", gardensRouter);
