@@ -1,10 +1,7 @@
 import z from "zod";
 import { Request, Response } from "express";
-import { AuthService } from "../services/auth.service";
-import {
-  loginValidation,
-  registerValidation,
-} from "../libs/schemas/auth.schema";
+import { AuthService } from "../services/auth";
+import { loginValidation, registerValidation } from "../libs/schemas/auth";
 
 const authService = new AuthService();
 

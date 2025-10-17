@@ -1,8 +1,8 @@
-import { gardenValidation } from "@/libs/schemas/garden.schema";
-import { Garden } from "@/libs/types/garden.types";
-import { GardenRepository } from "@/repositories/garden.repository";
 import { Request, Response } from "express";
 import z from "zod";
+import { GardenRepository } from "../repositories/garden";
+import { Garden } from "../libs/types/garden";
+import { gardenValidation } from "../libs/schemas/garden";
 
 const gardenRepo = new GardenRepository();
 

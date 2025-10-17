@@ -1,13 +1,13 @@
-import { pool } from "@/config/database";
-import { PlantSchema } from "@/libs/schemas/plants.schema";
-import { Plant } from "@/libs/types/plant.types";
+import { pool } from "../config/database";
+import { PlantSchema } from "../libs/schemas/plant.schema";
+import { Plant } from "../libs/types/plant";
 import {
   buildInsertColumns,
   buildPlaceholders,
   buildUpdateClauses,
   extractValidEntries,
   safeQuery,
-} from "@/utils/repositories.utils";
+} from "../utils/repo-helper";
 
 const ALLOWED_COLUMNS = new Set([
   "common_name",

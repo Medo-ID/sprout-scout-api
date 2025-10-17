@@ -16,11 +16,6 @@
     "noImplicitAny": true,
     "skipLibCheck": true,
 
-    /* Paths (optional alias) */
-    "paths": {
-      "@/*": ["./src/*"]
-    },
-
     /* Useful for tests */
     "types": ["jest"]
   },

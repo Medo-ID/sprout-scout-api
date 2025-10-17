@@ -1,8 +1,5 @@
 import dotenv from "dotenv";
-import {
-  ExternalPlant,
-  ExternalPlantDetail,
-} from "@/libs/types/external-api.types";
+import { ExternalPlant, ExternalPlantDetail } from "../libs/types/external-api";
 
 dotenv.config();
 

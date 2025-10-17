@@ -1,8 +1,8 @@
-import { PlantRepository } from "@/repositories/plants.repository";
-import { ExternalPlantService } from "./external-api.service";
-import { ExternalPlant } from "@/libs/types/external-api.types";
-import { PlantSchema } from "@/libs/schemas/plants.schema";
-import { Plant } from "@/libs/types/plant.types";
+import { PlantSchema } from "../libs/schemas/plant.schema";
+import { ExternalPlant } from "../libs/types/external-api";
+import { Plant } from "../libs/types/plant";
+import { PlantRepository } from "../repositories/plant";
+import { ExternalPlantService } from "./external-api";
 
 const plantsRepo = new PlantRepository();
 const externalApiService = new ExternalPlantService();

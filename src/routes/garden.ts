@@ -1,11 +1,11 @@
+import express, { Router } from "express";
 import {
   createGarden,
   deleteGarden,
   getUserGarden,
   getUserGardens,
   updateGarden,
-} from "@/controllers/garden.controller";
-import express, { Router } from "express";
+} from "../controllers/garden";
 
 export const gardensRouter: Router = express.Router();
 

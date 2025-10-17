@@ -1,13 +1,13 @@
-import { pool } from "@/config/database";
-import { GardenSchema } from "@/libs/schemas/garden.schema";
-import { Garden } from "@/libs/types/garden.types";
+import { pool } from "../config/database";
+import { GardenSchema } from "../libs/schemas/garden";
+import { Garden } from "../libs/types/garden";
 import {
   buildInsertColumns,
   buildPlaceholders,
   buildUpdateClauses,
   extractValidEntries,
   safeQuery,
-} from "@/utils/repositories.utils";
+} from "../utils/repo-helper";
 
 const ALLOWED_COLUMNS = new Set(["user_id", "name", "location"]);
 

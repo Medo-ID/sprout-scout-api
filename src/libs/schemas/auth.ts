@@ -1,6 +1,6 @@
 import z from "zod";
-import { userValidation } from "./user.schema";
-import { passwordValidation } from "./authProvider.schema";
+import { userValidation } from "./user";
+import { passwordValidation } from "./auth-provider";
 
 export const registerValidation = userValidation.and(passwordValidation);
 
