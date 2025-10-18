@@ -1,10 +1,11 @@
 import z from "zod";
 
 export const authProviderValidation = z.object({
-  userId: z.string(),
+  user_id: z.string(),
   provider: z.enum(["local", "google"]),
-  providerUserId: z.string().nullable(),
-  passwordHash: z.string().nullable(),
+  provider_user_id: z.string().nullable(),
+  password_hash: z.string().nullable(),
+  refresh_token: z.string(),
 });
 
 export const passwordValidation = z

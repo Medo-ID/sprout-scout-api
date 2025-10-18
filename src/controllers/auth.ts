@@ -17,7 +17,7 @@ export async function register(req: Request, res: Response) {
 
   const { name, email, password } = parsedResult.data;
   try {
-    const result = await authService.registerLocal(email, password, name);
+    const result = await authService.registerLocal(name, email, password);
     res.status(201).json(result);
   } catch (error: any) {
     res.status(401).json({ message: error.message });

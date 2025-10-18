@@ -13,6 +13,7 @@ const ALLOWED_COLUMNS = new Set([
   "provider",
   "provider_user_id",
   "password_hash",
+  "refresh_token",
 ]);
 
 export class AuthProviderRepository {
@@ -67,6 +68,20 @@ export class AuthProviderRepository {
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
       console.log(`DB Error updating password for user: ${userId}`, error);
+      return false;
+    }
+  }
+
+  public async saveRefeshToken(token: string): Promise<boolean> {
+    if (!token) throw new Error("Missing token");
+    try {
+      const result = await pool.query(
+        "INSERT INTO auth_providers (refresh_token) VALUES ($1) RETURNING refresh_token",
+        [token]
+      );
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      console.error("DB Error inserting refresh_token", error);
       return false;
     }
   }

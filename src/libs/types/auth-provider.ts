@@ -1,6 +1,7 @@
 export interface AuthProvider {
-  userId: string;
+  user_id: string;
   provider: "local" | "google";
-  providerUserId?: string | null;
-  passwordHash?: string | null;
+  provider_user_id?: string | null;
+  password_hash?: string | null;
+  refresh_token: string;
 }
