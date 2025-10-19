@@ -72,16 +72,39 @@ export class AuthProviderRepository {
     }
   }
 
-  public async saveRefeshToken(token: string): Promise<boolean> {
-    if (!token) throw new Error("Missing token");
+  public async setRefeshToken(
+    userId: string,
+    token: string | null
+  ): Promise<boolean> {
+    if (!token || !userId) throw new Error("Missing token or user id");
     try {
       const result = await pool.query(
-        "INSERT INTO auth_providers (refresh_token) VALUES ($1) RETURNING refresh_token",
-        [token]
+        "UPDATE auth_providers SET refresh_token = $1 WHERE user_id = $2 RETURNING *",
+        [token, userId]
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
       console.error("DB Error inserting refresh_token", error);
+      return false;
+    }
+  }
+
+  public async refreshTokenValidation(
+    userId: string,
+    token: string
+  ): Promise<boolean> {
+    if (!token || !userId) throw new Error("Missing token or user id");
+    try {
+      const { rows } = await pool.query(
+        "SELECT refresh_token FROM auth_providers WHERE user_id = $1",
+        [userId]
+      );
+      return rows[0].refresh_token === token;
+    } catch (error) {
+      console.log(
+        `DB Error validating refresh token: ${token} for user id: ${userId}`,
+        error
+      );
       return false;
     }
   }

@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { UsersRepository } from "../repositories/user";
 import { AuthProviderRepository } from "../repositories/auth-provider";
-import { generateTokens, signToken } from "../utils/auth-helper";
+import { generateTokens, verifyRefreshToken } from "../utils/auth-helper";
 
 const userRepo = new UsersRepository();
 const authRepo = new AuthProviderRepository();
@@ -25,24 +25,52 @@ export class AuthService {
       refresh_token: refreshToken,
     });
     if (!authDetail) throw new Error("Auth creation failed");
-    return { accessToken, user };
+    return { accessToken, refreshToken, user };
   }
-  // TODO: REMOVE THE OLD signToken() FUNCTION WITH THE NEW generateTokens()
-  // AND ADD REFRESH  TOKEN LOGIC
+
   public async loginLocal(email: string, password: string) {
     const user = await userRepo.findByEmail(email);
     if (!user || user.email !== email) throw new Error("Invalid credentials1");
     const auth = await authRepo.findByUserId(user.id);
-    console.log("auth:", auth);
     if (!auth || !auth.password_hash || auth.provider !== "local")
-      throw new Error("Invalid credentials");
+      throw new Error("Invalid credentials2");
     const match = await bcrypt.compare(password, auth.password_hash);
-    if (!match) throw new Error("Invalid credentials2");
-    const token = signToken({ userId: user.id, email: user.email });
-    return { token, user };
+    if (!match) throw new Error("Invalid credentials3");
+    const { accessToken, refreshToken } = await generateTokens({
+      userId: user.id,
+      email: user.email,
+    });
+    const result = await authRepo.setRefeshToken(user.id, refreshToken);
+    if (!result) throw new Error("Failed to set refresh token!");
+    return { accessToken, refreshToken, user };
   }
-  // TODO: FINISH IMPLEMENTING REFRESH TOKEN LOGIC
-  public async refreshAccessToken() {}
-  // FINISH IMPLEMENTING LOGOUT LOGIC
-  public async logout() {}
+
+  public async refreshAccessToken(token: string) {
+    if (!token) throw new Error("No Token provided");
+    const decoded = verifyRefreshToken<{ userId: string; email: string }>(
+      token
+    );
+    if (!decoded) throw new Error("Invalid token");
+    const isValid = await authRepo.refreshTokenValidation(
+      decoded.userId,
+      token
+    );
+    if (!isValid) throw new Error("Invalid refresh token");
+    const { accessToken, refreshToken } = await generateTokens({
+      userId: decoded.userId,
+      email: decoded.email,
+    });
+    await authRepo.setRefeshToken(decoded.userId, refreshToken);
+    return { accessToken, refreshToken };
+  }
+
+  public async logout(token: string): Promise<boolean> {
+    if (!token) throw new Error("Missing token");
+    const decoded = verifyRefreshToken<{ userId: string; email: string }>(
+      token
+    );
+    if (!decoded) throw new Error("Invalid token");
+    const result = await authRepo.setRefeshToken(decoded.userId, null);
+    return result;
+  }
 }

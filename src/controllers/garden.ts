@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import z from "zod";
 import { GardenRepository } from "../repositories/garden";
 import { Garden } from "../libs/types/garden";
-import { gardenValidation } from "../libs/schemas/garden";
+import { GardenSchema, gardenValidation } from "../libs/schemas/garden";
 
 const gardenRepo = new GardenRepository();
 
@@ -60,7 +60,7 @@ export async function getUserGarden(req: Request, res: Response) {
 }
 
 export async function createGarden(req: Request, res: Response) {
-  const data: Garden = req.body;
+  const data: GardenSchema = req.body;
   const validateResult = gardenValidation.safeParse(data);
 
   if (!validateResult.success) {
@@ -83,8 +83,8 @@ export async function createGarden(req: Request, res: Response) {
 
 export async function updateGarden(req: Request, res: Response) {
   const gardenId = req.params.garden_id;
-  const data: Partial<Garden> = req.body;
-  const validateResult = gardenValidation.safeParse(data);
+  const data: Partial<GardenSchema> = req.body;
+  const validateResult = gardenValidation.partial().safeParse(data);
 
   if (!validateResult.success) {
     res.status(400).json({

@@ -9,12 +9,6 @@ const REFRESH_SECRET = process.env.ACCESS_SECRET!;
 const ACCESS_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "15m";
 const REFRESH_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
-export function signToken(payload: object): string {
-  return jwt.sign(payload, ACCESS_SECRET, {
-    expiresIn: ACCESS_EXPIRES_IN,
-  } as SignOptions);
-}
-
 export async function generateTokens(payload: object) {
   const accessToken = jwt.sign(payload, ACCESS_SECRET, {
     expiresIn: ACCESS_EXPIRES_IN,
@@ -25,11 +19,20 @@ export async function generateTokens(payload: object) {
   return { accessToken, refreshToken };
 }
 
-export function verifyToken<T = any>(token: string): T | null {
+export function verifyAccessToken<T = any>(token: string): T | null {
   try {
     return jwt.verify(token, ACCESS_SECRET) as T;
   } catch (error) {
-    console.log("Error while verifying token", error);
+    console.log("Error while verifying access token", error);
+    return null;
+  }
+}
+
+export function verifyRefreshToken<T = any>(token: string): T | null {
+  try {
+    return jwt.verify(token, REFRESH_SECRET) as T;
+  } catch (error) {
+    console.log("Error while verifying refresh token", error);
     return null;
   }
 }
