@@ -1,6 +1,6 @@
 import { pool } from "../config/database";
 
-type TableEntries = [string, string | number | boolean | null][];
+export type TableEntries = [string, string | number | boolean | null][];
 
 export function extractValidEntries<T>(
   data: T,

@@ -9,7 +9,7 @@ const REFRESH_SECRET = process.env.ACCESS_SECRET!;
 const ACCESS_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "15m";
 const REFRESH_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
-export async function generateTokens(payload: object) {
+export function generateTokens(payload: object) {
   const accessToken = jwt.sign(payload, ACCESS_SECRET, {
     expiresIn: ACCESS_EXPIRES_IN,
   } as SignOptions);

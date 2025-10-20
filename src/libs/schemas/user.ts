@@ -6,7 +6,7 @@ export const userValidation = z.object({
     .min(2, "Name must be at least 2 characters")
     .max(50, "Name must be less than 50 characters"),
   email: z.email("Invalid email address"),
-  pictureUrl: z
+  picture_url: z
     .file()
     .min(1)
     .max(1024 * 1024)

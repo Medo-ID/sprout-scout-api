@@ -13,7 +13,7 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 12);
     const user = await userRepo.insert({ email, name });
     if (!user) throw new Error("User creation failed");
-    const { accessToken, refreshToken } = await generateTokens({
+    const { accessToken, refreshToken } = generateTokens({
       userId: user.id,
       email: user.email,
     });
@@ -36,7 +36,7 @@ export class AuthService {
       throw new Error("Invalid credentials2");
     const match = await bcrypt.compare(password, auth.password_hash);
     if (!match) throw new Error("Invalid credentials3");
-    const { accessToken, refreshToken } = await generateTokens({
+    const { accessToken, refreshToken } = generateTokens({
       userId: user.id,
       email: user.email,
     });
@@ -56,7 +56,7 @@ export class AuthService {
       token
     );
     if (!isValid) throw new Error("Invalid refresh token");
-    const { accessToken, refreshToken } = await generateTokens({
+    const { accessToken, refreshToken } = generateTokens({
       userId: decoded.userId,
       email: decoded.email,
     });
