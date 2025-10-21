@@ -4,7 +4,7 @@ import {
   buildPlaceholders,
   buildUpdateClauses,
   TableEntries,
-} from "../../../src/utils/repo-helper";
+} from "@/utils/repo-helper";
 
 const allowedColumns = new Set(["email", "name", "picture_url"]);
 const mockEntries: TableEntries = [

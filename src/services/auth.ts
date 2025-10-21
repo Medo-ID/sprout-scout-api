@@ -1,23 +1,25 @@
 import bcrypt from "bcryptjs";
-import { UsersRepository } from "../repositories/user";
-import { AuthProviderRepository } from "../repositories/auth-provider";
-import { generateTokens, verifyRefreshToken } from "../utils/auth-helper";
-
-const userRepo = new UsersRepository();
-const authRepo = new AuthProviderRepository();
+import { UsersRepository } from "@/repositories/user";
+import { AuthProviderRepository } from "@/repositories/auth-provider";
+import { generateTokens, verifyRefreshToken } from "@/utils/auth-helper";
 
 export class AuthService {
+  constructor(
+    private userRepo = new UsersRepository(),
+    private authRepo = new AuthProviderRepository()
+  ) {}
+
   public async registerLocal(name: string, email: string, password: string) {
-    const existingUser = await userRepo.findByEmail(email);
+    const existingUser = await this.userRepo.findByEmail(email);
     if (existingUser) throw new Error("Email already registered");
     const hashedPassword = await bcrypt.hash(password, 12);
-    const user = await userRepo.insert({ email, name });
+    const user = await this.userRepo.insert({ email, name });
     if (!user) throw new Error("User creation failed");
     const { accessToken, refreshToken } = generateTokens({
       userId: user.id,
       email: user.email,
     });
-    const authDetail = await authRepo.insert({
+    const authDetail = await this.authRepo.insert({
       user_id: user.id,
       provider: "local",
       provider_user_id: null,
@@ -29,9 +31,9 @@ export class AuthService {
   }
 
   public async loginLocal(email: string, password: string) {
-    const user = await userRepo.findByEmail(email);
+    const user = await this.userRepo.findByEmail(email);
     if (!user || user.email !== email) throw new Error("Invalid credentials1");
-    const auth = await authRepo.findByUserId(user.id);
+    const auth = await this.authRepo.findByUserId(user.id);
     if (!auth || !auth.password_hash || auth.provider !== "local")
       throw new Error("Invalid credentials2");
     const match = await bcrypt.compare(password, auth.password_hash);
@@ -40,7 +42,7 @@ export class AuthService {
       userId: user.id,
       email: user.email,
     });
-    const result = await authRepo.setRefeshToken(user.id, refreshToken);
+    const result = await this.authRepo.setRefeshToken(user.id, refreshToken);
     if (!result) throw new Error("Failed to set refresh token!");
     return { accessToken, refreshToken, user };
   }
@@ -51,7 +53,7 @@ export class AuthService {
       token
     );
     if (!decoded) throw new Error("Invalid token");
-    const isValid = await authRepo.refreshTokenValidation(
+    const isValid = await this.authRepo.refreshTokenValidation(
       decoded.userId,
       token
     );
@@ -60,7 +62,7 @@ export class AuthService {
       userId: decoded.userId,
       email: decoded.email,
     });
-    await authRepo.setRefeshToken(decoded.userId, refreshToken);
+    await this.authRepo.setRefeshToken(decoded.userId, refreshToken);
     return { accessToken, refreshToken };
   }
 
@@ -70,7 +72,7 @@ export class AuthService {
       token
     );
     if (!decoded) throw new Error("Invalid token");
-    const result = await authRepo.setRefeshToken(decoded.userId, null);
+    const result = await this.authRepo.setRefeshToken(decoded.userId, null);
     return result;
   }
 }

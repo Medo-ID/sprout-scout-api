@@ -3,15 +3,15 @@ import { ExternalPlant } from "../libs/types/external-api";
 import { Plant } from "../libs/types/plant";
 import { PlantRepository } from "../repositories/plant";
 import { ExternalPlantService } from "./external-api";
-
-const plantsRepo = new PlantRepository();
-const externalApiService = new ExternalPlantService();
-
 export class PlantsService {
+  constructor(
+    private plantRepo = new PlantRepository(),
+    private externalApiService = new ExternalPlantService()
+  ) {}
   private async restructApiPlantData(
     data: ExternalPlant
   ): Promise<PlantSchema | undefined> {
-    const details = await externalApiService.getSpeciesDetails(data.id);
+    const details = await this.externalApiService.getSpeciesDetails(data.id);
     const wateringValue = details.watering_general_benchmark.value;
     const match = wateringValue.match(/(\d+)(?:\s*-\s*(d+))?/);
     const wateringFrequencyDays = match && Number(match[1]);
@@ -35,23 +35,23 @@ export class PlantsService {
   public async searchForPlants(
     query: string
   ): Promise<Plant[] | ExternalPlant[] | undefined> {
-    const databasePlants = await plantsRepo.searchByName(query);
+    const databasePlants = await this.plantRepo.searchByName(query);
     if (databasePlants.length > 0) {
       return databasePlants;
     }
-    const plants = await externalApiService.searchSpecies(query);
+    const plants = await this.externalApiService.searchSpecies(query);
     return plants;
   }
   // TODO: Re design the logic behind the user -> plant business logic
   public async savePlants(plantsData: ExternalPlant[]): Promise<string[]> {
     const plantIds: string[] = [];
     for (const plantData of plantsData) {
-      const isExistsInDatabase = await plantsRepo.findByExternalApiId(
+      const isExistsInDatabase = await this.plantRepo.findByExternalApiId(
         plantData.id
       );
       if (!isExistsInDatabase) {
         const data = await this.restructApiPlantData(plantData);
-        const result = data && (await plantsRepo.insert(data));
+        const result = data && (await this.plantRepo.insert(data));
         result && plantIds.push(result.id);
       }
     }
