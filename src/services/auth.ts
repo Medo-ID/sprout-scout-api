@@ -32,12 +32,12 @@ export class AuthService {
 
   public async loginLocal(email: string, password: string) {
     const user = await this.userRepo.findByEmail(email);
-    if (!user || user.email !== email) throw new Error("Invalid credentials1");
+    if (!user || user.email !== email) throw new Error("Invalid credentials");
     const auth = await this.authRepo.findByUserId(user.id);
     if (!auth || !auth.password_hash || auth.provider !== "local")
-      throw new Error("Invalid credentials2");
+      throw new Error("Invalid credentials");
     const match = await bcrypt.compare(password, auth.password_hash);
-    if (!match) throw new Error("Invalid credentials3");
+    if (!match) throw new Error("Invalid credentials");
     const { accessToken, refreshToken } = generateTokens({
       userId: user.id,
       email: user.email,

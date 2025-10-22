@@ -2,5 +2,5 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  pictureUrl: string | null;
+  picture_url: string | null;
 }
