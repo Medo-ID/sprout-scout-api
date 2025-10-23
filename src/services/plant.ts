@@ -12,23 +12,25 @@ export class PlantsService {
     data: ExternalPlant
   ): Promise<PlantSchema | undefined> {
     const details = await this.externalApiService.getSpeciesDetails(data.id);
-    const wateringValue = details.watering_general_benchmark.value;
-    const match = wateringValue.match(/(\d+)(?:\s*-\s*(d+))?/);
-    const wateringFrequencyDays = match && Number(match[1]);
-    if (details && wateringFrequencyDays) {
-      return {
-        common_name: data.common_name,
-        watering_frequency_days: wateringFrequencyDays,
-        sunlight: details.sunlight,
-        external_api_id: data.id,
-        is_custom: false,
-        custom_watering_frequency_days: null,
-        family: data.family,
-        cultivar: data.cultivar,
-        species_epithet: data.species_epithet,
-        genus: data.genus,
-        default_image: data.default_image.regular_url,
-      };
+    if (details) {
+      const wateringValue = details.watering_general_benchmark.value;
+      const match = wateringValue.match(/(\d+)(?:\s*-\s*(d+))?/);
+      const wateringFrequencyDays = match && Number(match[1]);
+      if (wateringFrequencyDays) {
+        return {
+          common_name: data.common_name,
+          watering_frequency_days: wateringFrequencyDays,
+          sunlight: details.sunlight,
+          external_api_id: data.id,
+          is_custom: false,
+          custom_watering_frequency_days: null,
+          family: data.family,
+          cultivar: data.cultivar,
+          species_epithet: data.species_epithet,
+          genus: data.genus,
+          default_image: data.default_image.regular_url,
+        };
+      }
     }
   }
 

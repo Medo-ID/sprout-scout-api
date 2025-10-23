@@ -9,7 +9,6 @@ import { AuthService } from "@/services/auth";
 jest.mock("bcryptjs");
 jest.mock("@/utils/auth-helper");
 
-// bcrypt functions are overloaded; cast to any to allow Jest mock helpers
 const mockedBcrypt = {
   hash: bcrypt.hash as unknown as jest.MockedFunction<any>,
   compare: bcrypt.compare as unknown as jest.MockedFunction<any>,
