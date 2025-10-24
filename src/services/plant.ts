@@ -44,7 +44,7 @@ export class PlantsService {
     const plants = await this.externalApiService.searchSpecies(query);
     return plants;
   }
-  // TODO: Re design the logic behind the user -> plant business logic
+
   public async savePlants(plantsData: ExternalPlant[]): Promise<string[]> {
     const plantIds: string[] = [];
     for (const plantData of plantsData) {
@@ -53,18 +53,14 @@ export class PlantsService {
       );
       if (!isExistsInDatabase) {
         const data = await this.restructApiPlantData(plantData);
-        const result = data && (await this.plantRepo.insert(data));
-        result && plantIds.push(result.id);
+        if (data) {
+          try {
+            const result = await this.plantRepo.insert(data);
+            result && plantIds.push(result.id);
+          } catch (error) {}
+        }
       }
     }
     return plantIds;
   }
-
-  // async addPlants() {}
-
-  // async createCustomPlants(data: PlantSchema) {}
-
-  // async updateCustomPlant(data: Partial<PlantSchema>) {}
-
-  // async deleteCustomPlant(ids: string[]) {}
 }

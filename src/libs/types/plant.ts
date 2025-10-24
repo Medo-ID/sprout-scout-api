@@ -10,6 +10,6 @@ export interface Plant {
   external_api_id: string | null;
   is_custom: boolean;
   custom_watering_frequency_days: number | null;
-  default_image: File | undefined;
+  default_image: string | undefined;
   created_at: Date;
 }
