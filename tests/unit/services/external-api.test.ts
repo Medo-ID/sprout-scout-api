@@ -1,4 +1,4 @@
-import { ExternalPlantService } from "@/services/external-api";
+import { ExternalPlantService } from "../../../src/services/external-api";
 
 global.fetch = jest.fn();
 

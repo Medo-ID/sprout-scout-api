@@ -1,15 +1,15 @@
 import { Request, Response } from "express";
 import z from "zod";
-import { GardenRepository } from "../repositories/garden";
-import { Garden } from "../libs/types/garden";
 import { GardenSchema, gardenValidation } from "../libs/schemas/garden";
+import { GardenRepository } from "../repositories/garden";
 
 const gardenRepo = new GardenRepository();
 
 export async function getUserGardens(req: Request, res: Response) {
   const userId = req.params.user_id;
+
   if (!userId) {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Missing user id",
       userId,
     });
@@ -35,8 +35,9 @@ export async function getUserGardens(req: Request, res: Response) {
 export async function getUserGarden(req: Request, res: Response) {
   const userId = req.params.user_id;
   const gardenId = req.params.garden_id;
+
   if (!userId || !gardenId) {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Missing user/garden id",
       ids: { userId, gardenId },
     });
@@ -64,7 +65,7 @@ export async function createGarden(req: Request, res: Response) {
   const validateResult = gardenValidation.safeParse(data);
 
   if (!validateResult.success) {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Invalid input",
       errors: z.prettifyError(validateResult.error),
     });
@@ -87,7 +88,7 @@ export async function updateGarden(req: Request, res: Response) {
   const validateResult = gardenValidation.partial().safeParse(data);
 
   if (!validateResult.success) {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Invalid input",
       errors: z.prettifyError(validateResult.error),
     });
@@ -114,7 +115,7 @@ export async function deleteGarden(req: Request, res: Response) {
   const gardenId = req.params.garden_id;
 
   if (!gardenId) {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Messing garden id parameter",
       gardenId,
     });

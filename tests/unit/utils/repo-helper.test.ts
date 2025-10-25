@@ -4,7 +4,7 @@ import {
   buildPlaceholders,
   buildUpdateClauses,
   TableEntries,
-} from "@/utils/repo-helper";
+} from "../../../src/utils/repo-helper";
 
 describe("Repositories helpers:", () => {
   const allowedColumns = new Set(["email", "name", "picture_url"]);

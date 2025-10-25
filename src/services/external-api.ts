@@ -1,4 +1,4 @@
-import { ExternalPlant, ExternalPlantDetail } from "@/libs/types/external-api";
+import { ExternalPlant, ExternalPlantDetail } from "../libs/types/external-api";
 import dotenv from "dotenv";
 
 dotenv.config();

@@ -1,6 +1,6 @@
-import { PlantRepository } from "@/repositories/plant";
-import { ExternalPlantService } from "@/services/external-api";
-import { PlantsService } from "@/services/plant";
+import { PlantRepository } from "../../../src/repositories/plant";
+import { ExternalPlantService } from "../../../src/services/external-api";
+import { PlantsService } from "../../../src/services/plant";
 
 describe("Plant Service", () => {
   const dbPlant = {

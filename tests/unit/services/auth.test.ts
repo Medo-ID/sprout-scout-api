@@ -1,10 +1,10 @@
 import * as bcrypt from "bcryptjs";
-import * as tokenHelpers from "@/utils/auth-helper";
-import { AuthProvider } from "@/libs/types/auth-provider";
-import { User } from "@/libs/types/user";
-import { AuthProviderRepository } from "@/repositories/auth-provider";
-import { UsersRepository } from "@/repositories/user";
-import { AuthService } from "@/services/auth";
+import * as tokenHelpers from "../../../src/utils/auth-helper";
+import { AuthProvider } from "../../../src/libs/types/auth-provider";
+import { User } from "../../../src/libs/types/user";
+import { AuthService } from "../../../src/services/auth";
+import { UsersRepository } from "../../../src/repositories/user";
+import { AuthProviderRepository } from "../../../src/repositories/auth-provider";
 
 jest.mock("bcryptjs");
 jest.mock("@/utils/auth-helper");

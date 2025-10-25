@@ -9,11 +9,6 @@
     "rootDir": ".",
     "outDir": "./dist",
 
-    /* Path aliases */
-    "paths": {
-      "@/*": ["./src/*"]
-    },
-
     /* Node + Jest types */
     "types": ["node", "jest"],
 

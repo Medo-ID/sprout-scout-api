@@ -8,7 +8,7 @@ import {
   generateTokens,
   verifyAccessToken,
   verifyRefreshToken,
-} from "@/utils/auth-helper";
+} from "../../../src/utils/auth-helper";
 
 const mockedJWT = jwt as unknown as {
   sign: jest.Mock;

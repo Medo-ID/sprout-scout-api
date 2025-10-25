@@ -106,13 +106,13 @@ export class PlantRepository {
 
     try {
       const { rows } = await pool.query(
-        `INSERT INTO plants (${columns}) VALUES (${placeholders}) RETURNING *`,
+        `INSERT INTO plants (${columns}) VALUES ${placeholders} RETURNING *`,
         allValues
       );
 
       return rows;
     } catch (error) {
-      console.log(`DB Error bulk inserting data: ${arrayData}`, error);
+      console.log(`DB Error bulk inserting plans data: ${arrayData}`, error);
       return [];
     }
   }

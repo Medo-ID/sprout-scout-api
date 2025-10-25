@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
-import { UsersRepository } from "@/repositories/user";
-import { AuthProviderRepository } from "@/repositories/auth-provider";
-import { generateTokens, verifyRefreshToken } from "@/utils/auth-helper";
+import { AuthProviderRepository } from "../repositories/auth-provider";
+import { UsersRepository } from "../repositories/user";
+import { generateTokens, verifyRefreshToken } from "../utils/auth-helper";
 
 export class AuthService {
   constructor(
