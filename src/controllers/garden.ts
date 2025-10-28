@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { AuthRequest } from "../middlewares/auth";
 import z from "zod";
 import { GardenSchema, gardenValidation } from "../libs/schemas/garden";
 import { GardenRepository } from "../repositories/garden";
@@ -17,13 +18,13 @@ export async function getUserGardens(req: Request, res: Response) {
 
   try {
     const result = await gardenRepo.findAllByUserId(userId);
-    if (!result) {
-      res.status(404).json({
-        message: "gardens not found for this user",
-        userId,
+    if (!result || result.length === 0) {
+      return res.status(200).json({
+        message: "user's gardens data",
+        data: [],
       });
     }
-    res.status(200).json({
+    return res.status(200).json({
       message: "user's gardens data",
       data: result,
     });
@@ -46,12 +47,12 @@ export async function getUserGarden(req: Request, res: Response) {
   try {
     const result = await gardenRepo.findOneByUserId(userId, gardenId);
     if (!result) {
-      res.status(404).json({
+      return res.status(404).json({
         message: "gardens not found",
         ids: { userId, gardenId },
       });
     }
-    res.status(200).json({
+    return res.status(200).json({
       message: "garden data",
       data: result,
     });
@@ -61,7 +62,13 @@ export async function getUserGarden(req: Request, res: Response) {
 }
 
 export async function createGarden(req: Request, res: Response) {
-  const data: GardenSchema = req.body;
+  // prefer authenticated user id over body user_id when available
+  const bodyData: GardenSchema = req.body;
+  const authReq = req as AuthRequest;
+  const data: GardenSchema = {
+    ...bodyData,
+    user_id: authReq.user?.userId || bodyData.user_id,
+  };
   const validateResult = gardenValidation.safeParse(data);
 
   if (!validateResult.success) {
@@ -97,12 +104,12 @@ export async function updateGarden(req: Request, res: Response) {
   try {
     const result = await gardenRepo.update(data, gardenId);
     if (!result) {
-      res.status(404).json({
+      return res.status(404).json({
         message: "Garden not found",
         data,
       });
     }
-    res.status(200).json({
+    return res.status(200).json({
       message: "Garden updated!",
       data: result,
     });
@@ -124,12 +131,12 @@ export async function deleteGarden(req: Request, res: Response) {
   try {
     const result = await gardenRepo.delete(gardenId);
     if (!result) {
-      res.status(404).json({
+      return res.status(404).json({
         message: "Garden not found",
         gardenId,
       });
     }
-    res.status(200).json({
+    return res.status(200).json({
       message: "Garden deleted!",
       gardenId,
     });

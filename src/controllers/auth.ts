@@ -20,16 +20,24 @@ export async function register(req: Request, res: Response) {
 
   const { name, email, password } = parsedResult.data;
   try {
-    const result = await authService.registerLocal(name, email, password);
-    res.cookie("refreshToken", result.refreshToken, {
+    const { accessToken, refreshToken, user } = await authService.registerLocal(
+      name,
+      email,
+      password
+    );
+    res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
       path: "/",
     });
-    res.status(201).json(result.accessToken);
+    res.status(201).json({ accessToken, user });
   } catch (error: any) {
-    res.status(401).json({ message: error.message });
+    if (error.message === "Email already registered") {
+      res.status(401).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: error.message });
+    }
   }
 }
 
@@ -45,16 +53,23 @@ export async function login(req: Request, res: Response) {
 
   const { email, password } = parsedResult.data;
   try {
-    const result = await authService.loginLocal(email, password);
-    res.cookie("refreshToken", result.refreshToken, {
+    const { accessToken, refreshToken, user } = await authService.loginLocal(
+      email,
+      password
+    );
+    res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
       path: "/",
     });
-    res.status(200).json(result.accessToken);
+    res.status(200).json({ accessToken, user });
   } catch (error: any) {
-    res.status(400).json({ message: error.message });
+    if (error.message === "Invalid credentials") {
+      res.status(400).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: error.message });
+    }
   }
 }
 

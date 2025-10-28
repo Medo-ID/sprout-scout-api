@@ -5,7 +5,7 @@ import { passwordValidation } from "./auth-provider";
 export const registerValidation = userValidation.and(passwordValidation);
 
 export const loginValidation = z.object({
-  email: z.email("Invalid email address"),
+  email: z.string().email("Invalid email address"),
   password: z.string({ error: "Password is required" }),
 });
 

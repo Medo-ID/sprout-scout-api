@@ -144,7 +144,7 @@ describe("Plant Service", () => {
       expect(result).toMatchObject([mockExternalPlant]);
     });
 
-    it("should return undefined when both searchs fails", async () => {
+    it("should return empty array when both searches fail", async () => {
       mockPlantRepo.searchByName.mockResolvedValueOnce([]);
       mockExternalApiService.searchSpecies.mockResolvedValueOnce(undefined);
       const result = await plantService.searchForPlants("bad example");
@@ -154,7 +154,7 @@ describe("Plant Service", () => {
       expect(mockExternalApiService.searchSpecies).toHaveBeenCalledWith(
         "bad example"
       );
-      expect(result).toBeUndefined();
+      expect(result).toEqual([]);
     });
   });
 

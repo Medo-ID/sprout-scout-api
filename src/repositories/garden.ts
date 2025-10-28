@@ -79,7 +79,9 @@ export class GardenRepository {
   public async delete(id: string): Promise<boolean> {
     if (!id) throw new Error("Missing gardeb id");
     try {
-      const result = await pool.query("DELETE FROM garden WHERE id = $1", [id]);
+      const result = await pool.query("DELETE FROM gardens WHERE id = $1", [
+        id,
+      ]);
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
       console.log(`DB Error deleting garden with id: ${id}`, error);

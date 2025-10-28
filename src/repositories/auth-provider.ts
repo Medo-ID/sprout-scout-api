@@ -76,13 +76,27 @@ export class AuthProviderRepository {
     userId: string,
     token: string | null
   ): Promise<boolean> {
-    if (!token || !userId) throw new Error("Missing token or user id");
+    if (!userId) throw new Error("Missing user id");
     try {
       const result = await pool.query(
         "UPDATE auth_providers SET refresh_token = $1 WHERE user_id = $2 RETURNING *",
         [token, userId]
       );
-      return (result.rowCount ?? 0) > 0;
+
+      if ((result.rowCount ?? 0) > 0) return true;
+
+      // If no rows were updated, check that the user exists before inserting
+      const { rows } = await pool.query("SELECT 1 FROM users WHERE id = $1", [
+        userId,
+      ]);
+      if (!rows || rows.length === 0) return false;
+
+      // Insert a local auth provider record if the user exists
+      const insertResult = await pool.query(
+        `INSERT INTO auth_providers (user_id, provider, refresh_token) VALUES ($1, 'local', $2) RETURNING *`,
+        [userId, token]
+      );
+      return (insertResult.rowCount ?? 0) > 0;
     } catch (error) {
       console.error("DB Error inserting refresh_token", error);
       return false;

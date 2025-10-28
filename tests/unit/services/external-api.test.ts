@@ -12,7 +12,21 @@ describe("ExternalPlantService", () => {
 
   describe("searchSpecies", () => {
     it("should fetch data successfully", async () => {
-      const mockData = [{ id: 2, common_name: "Full Example" }];
+      const mockData = {
+        data: [
+          {
+            id: 2,
+            common_name: "Full Example",
+            family: "Test Family",
+            genus: "Test Genus",
+            species_epithet: "test species",
+            cultivar: "Test Cultivar",
+            default_image: {
+              regular_url: "http://example.com/image.jpg",
+            },
+          },
+        ],
+      };
       (fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -22,7 +36,7 @@ describe("ExternalPlantService", () => {
       expect(fetch).toHaveBeenCalledWith(
         expect.stringContaining("species-list?key=")
       );
-      expect(response).toEqual(mockData);
+      expect(response).toEqual(mockData.data);
     });
 
     it("should throw an error for a non-ok response", async () => {
@@ -53,7 +67,11 @@ describe("ExternalPlantService", () => {
     it("should fetch data successfully", async () => {
       const mockDetails = {
         id: 2,
-        wateringFrequency: { value: "7", unit: "Days" },
+        watering_general_benchmark: {
+          value: "7 days",
+          unit: "days",
+        },
+        sunlight: ["full sun", "partial shade"],
       };
       (fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,

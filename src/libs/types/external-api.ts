@@ -15,17 +15,17 @@ export interface ExternalPlant {
   };
 }
 
-export interface ExternalPlantDetail {
+export interface ExternalPlantDetail extends Partial<ExternalPlant> {
   id: number;
-  watering: string;
+  watering?: string;
   watering_general_benchmark: {
     value: string;
     unit: string;
   };
   sunlight: string[];
-  maintenance: string;
-  growth_rate: string;
-  care_level: string;
-  medicinal: boolean;
-  description: string;
+  maintenance?: string;
+  growth_rate?: string;
+  care_level?: string;
+  medicinal?: boolean;
+  description?: string;
 }

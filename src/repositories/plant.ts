@@ -60,7 +60,7 @@ export class PlantRepository {
     if (!query) throw new Error("Missing search query");
     try {
       const { rows } = await pool.query(
-        "SELECT * FROM plants WHERE LOWER(name) LIKE LOWER($1)",
+        "SELECT * FROM plants WHERE LOWER(common_name) LIKE LOWER($1)",
         [`%${query}%`]
       );
       return rows;

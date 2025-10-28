@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { AuthProviderRepository } from "../repositories/auth-provider";
 import { UsersRepository } from "../repositories/user";
 import { generateTokens, verifyRefreshToken } from "../utils/auth-helper";
+import { pool } from "../config/database";
 
 export class AuthService {
   constructor(
@@ -43,7 +44,8 @@ export class AuthService {
       email: user.email,
     });
     const result = await this.authRepo.setRefeshToken(user.id, refreshToken);
-    if (!result) throw new Error("Failed to set refresh token!");
+    if (!result)
+      console.warn("Warning: Failed to set refresh token for user", user.id);
     return { accessToken, refreshToken, user };
   }
 

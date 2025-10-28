@@ -36,13 +36,18 @@ export class PlantsService {
 
   public async searchForPlants(
     query: string
-  ): Promise<Plant[] | ExternalPlant[] | undefined> {
-    const databasePlants = await this.plantRepo.searchByName(query);
-    if (databasePlants.length > 0) {
-      return databasePlants;
+  ): Promise<(Plant | ExternalPlant)[]> {
+    try {
+      const databasePlants = await this.plantRepo.searchByName(query);
+      if (databasePlants.length > 0) {
+        return databasePlants;
+      }
+      const plants = await this.externalApiService.searchSpecies(query);
+      return plants || [];
+    } catch (error) {
+      console.error("Error searching for plants:", error);
+      return [];
     }
-    const plants = await this.externalApiService.searchSpecies(query);
-    return plants;
   }
 
   public async savePlants(plantsData: ExternalPlant[]): Promise<string[]> {

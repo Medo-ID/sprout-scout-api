@@ -3,5 +3,5 @@ import { save, search } from "../controllers/plant";
 
 export const plantsRouter: Router = express.Router();
 
-plantsRouter.post("/?query", search);
-plantsRouter.post("/", save);
+plantsRouter.post("/search", search);
+plantsRouter.post("/save", save);
